@@ -11,6 +11,8 @@ import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -36,38 +38,26 @@ public class MainDriver extends Application{
 	}
 
 	public void start(Stage stage) {
+		stage.setResizable(false);
+		stage.getIcons().add(new Image(MainDriver.class.getResourceAsStream("icon.png")));
+		
 		/* START SELECTION GROUP */
 		Group selectionRoot = new Group(); //a Group is a collection of shapes to put on the screen.
-		Scene selectionScene = new Scene(selectionRoot); // 800 by 600 pixel screen
-		stage.setTitle("bEngine");
+		Scene selectionScene = new Scene(selectionRoot);
+		stage.setTitle("bEngine Selection");
 		
-		Button feederButton = new Button("Feeder");
-		Button birdButton = new Button("Bird");
-		Button visitButton = new Button("Visit");
+		Button feederButton = new Button("Create a new feeder");
+		Button birdButton = new Button("Create a new bird");
+		Button visitButton = new Button("Create a visit");
 		Button saveButton = new Button("Save");
 		Button exitButton = new Button("Exit");
 		
-		VBox firstCol = new VBox(10);
-		HBox selectionAdminRow = new HBox(10);
-		firstCol.getChildren().addAll(feederButton, birdButton, visitButton);
-		selectionAdminRow.getChildren().addAll(saveButton, exitButton);
-		GridPane.setRowIndex(firstCol, 1);
-		GridPane.setColumnIndex(firstCol, 1);
-		GridPane selectionGrid = new GridPane();
-		for(int i = 0; i < 3; i++) {
-			selectionGrid.getColumnConstraints().add(new ColumnConstraints(100));
-			selectionGrid.getRowConstraints().add(new RowConstraints(100));
-		}
-		selectionGrid.setHgap(10);
-		selectionGrid.getChildren().addAll(firstCol);
+		VBox selectionVboxButtons = new VBox(10);
+		selectionVboxButtons.setPadding(new Insets(30, 30, 30, 30));
+		selectionVboxButtons.getChildren().addAll(feederButton, birdButton, visitButton, exitButton);
 		
-		BorderPane.setAlignment(selectionAdminRow, Pos.CENTER_RIGHT);
-		BorderPane.setMargin(selectionAdminRow, new Insets(10, 10, 10, 100));
-		BorderPane selectionBorderPane = new BorderPane();
-		selectionBorderPane.setCenter(selectionGrid);
-		selectionBorderPane.setBottom(selectionAdminRow);
-
-		selectionRoot.getChildren().add(selectionBorderPane);
+		selectionRoot.getChildren().add(selectionVboxButtons);
+		
 		/* END SELECTION GROUP */
 		/* START FEEDER GROUP */
 		Group feederRoot = new Group();
