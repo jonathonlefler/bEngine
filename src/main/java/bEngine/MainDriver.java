@@ -3,22 +3,29 @@
  */
 package bEngine;
 
+import java.io.IOException;
+
 import com.google.gson.Gson;
 
 import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 public class MainDriver extends Application{
@@ -49,30 +56,213 @@ public class MainDriver extends Application{
 		Button feederButton = new Button("Create a new feeder");
 		Button birdButton = new Button("Create a new bird");
 		Button visitButton = new Button("Create a visit");
-		Button saveButton = new Button("Save");
-		Button exitButton = new Button("Exit");
+		Button selectionExitButton = new Button("Exit");
 		
 		VBox selectionVboxButtons = new VBox(10);
 		selectionVboxButtons.setPadding(new Insets(30, 30, 30, 30));
-		selectionVboxButtons.getChildren().addAll(feederButton, birdButton, visitButton, exitButton);
-		
+		selectionVboxButtons.getChildren().addAll(feederButton, birdButton, visitButton, selectionExitButton);	
 		selectionRoot.getChildren().add(selectionVboxButtons);
-		
 		/* END SELECTION GROUP */
+		
 		/* START FEEDER GROUP */
 		Group feederRoot = new Group();
-		Scene feederScene = new Scene(feederRoot, 800, 600);
+		Scene feederScene = new Scene(feederRoot, 500, 220);
+		
+		HBox feederAdminHBox = new HBox(10);
+		Button feederSaveButton = new Button("Save");
+		Button feederBackButton = new Button("Back");
+		Button feederExitButton = new Button("Exit");
+		feederAdminHBox.getChildren().addAll(feederSaveButton, feederBackButton, feederExitButton);
+		
+		VBox feederLabels = new VBox(30);
+		Label feederLabelBattery = new Label("Battery Level:");
+		Label feederLabelID = new Label("ID:");
+		Label feederLabelFullName = new Label("Full Name:");
+		Label feederLabelLastContact = new Label("Last Contact:");
+		feederLabels.getChildren().addAll(feederLabelBattery, feederLabelID, 
+				feederLabelFullName, feederLabelLastContact);
+		
+		VBox feederFields = new VBox(17);
+		TextField feederTextFieldBattery = new TextField();
+		TextField feederTextFieldID = new TextField();
+		TextField feederTextFieldFullName = new TextField();
+		TextField feederTextFieldLastContact = new TextField();
+		feederFields.getChildren().addAll(feederTextFieldBattery, feederTextFieldID,
+				feederTextFieldFullName, feederTextFieldLastContact);
+		
+		VBox feederLabelsExplination = new VBox(30);
+		Label feederLabelExBattery = new Label("int -- 0 - 100");
+		Label feederLabelExID = new Label("String -- key for database, must be 4 chars");
+		Label feederLabelExFullName = new Label("String -- max of 12 chars");
+		Label feederLabelExLastContact = new Label("?");
+		feederLabelsExplination.getChildren().addAll(feederLabelExBattery, feederLabelExID, 
+				feederLabelExFullName, feederLabelExLastContact);
+		
+		GridPane feederGridPane = new GridPane();
+		feederGridPane.setHgap(10);
+		GridPane.setConstraints(feederLabels, 1, 0);
+		GridPane.setConstraints(feederFields, 2, 0);
+		GridPane.setConstraints(feederLabelsExplination, 3, 0);
+		feederGridPane.getChildren().addAll(feederLabels, feederFields, feederLabelsExplination);
+		
+		AnchorPane feederAnchorPane = new AnchorPane();
+		AnchorPane.setTopAnchor(feederGridPane, 10.0);
+		AnchorPane.setBottomAnchor(feederAdminHBox, -50.0);
+		feederAnchorPane.getChildren().addAll(feederAdminHBox, feederGridPane);
+
+		feederRoot.getChildren().add(feederAnchorPane);
+		//* START FEEDER ACTION EVENTS *//
+		
+		feederSaveButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				int battery = 0, lastCount = 0;
+				
+				if(feederTextFieldBattery.getText().isEmpty()) {feederTextFieldBattery.setText("0");}
+				if(feederTextFieldLastContact.getText().isEmpty()) {feederTextFieldLastContact.setText("0");}
+				
+				String rawBattery = feederTextFieldBattery.getText(), 
+						rawId = feederTextFieldID.getText(), 
+						rawFullName = feederTextFieldFullName.getText(), 
+						rawLastCount = feederTextFieldLastContact.getText();
+				
+				
+				boolean goodInput = true;
+				if(!validateInputInt(rawBattery, 0,  100)) {
+					feederLabelExBattery.setTextFill(Color.RED);
+					goodInput = false;
+				}
+				else {
+					battery = Integer.parseInt(rawBattery);
+				}
+				
+				if(!validateInputString(rawId, 4, 4)) {
+					feederLabelExID.setTextFill(Color.RED);
+					goodInput = false;
+				}
+				
+				if(!validateInputString(rawFullName, 0, 12)) {
+					feederLabelExFullName.setTextFill(Color.RED);
+					goodInput = false;
+				}
+				
+				if(!validateInputInt(rawLastCount, 0,  100)) {
+					feederLabelExLastContact.setTextFill(Color.RED);
+					goodInput = false;
+				}
+				else if(goodInput == true) {
+					lastCount = Integer.parseInt(rawLastCount);
+				}
+				
+				if(goodInput) {
+					Feeder newFeeder = new Feeder(battery, rawId, rawFullName, lastCount);
+					System.out.println(newFeeder.getBattery());
+					System.out.println(newFeeder.getId());
+					System.out.println(newFeeder.getFullName());
+					System.out.println(newFeeder.getLastContact());
+					feederCrudProcessing(newFeeder);
+				}		
+			}
+		});
+		
+		feederBackButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				stage.setTitle("bEngine Selection");
+				stage.setScene(selectionScene);
+			}
+		});
+		
+		feederExitButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				System.exit(0);
+			}
+		});
+		
+		//* END FEEDER ACTION EVENTS *//
 		/* END FEEDER GROUP */
+		
 		/* START BIRD GROUP */
 		/* END BIRD GROUP */
+		
 		/* START VISIT GROUP */
 		/* END VISIT GROUP */
+		
+		/* START SELECTION ACTION EVENTS */	
+		feederButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				stage.setTitle("Feeder Creation");
+				stage.setScene(feederScene);
+			}
+		});
+		
+		birdButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				
+			}
+		});
+		
+		visitButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				
+			}
+		});
+		
+		selectionExitButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				System.exit(0);
+			}
+		});
+		/* END ACTION EVENTS */
 		stage.setScene(selectionScene);
 		stage.show(); //shows the "actual" window.
 
 	}
+
+	/**
+	 * 
+	 * @param VAL
+	 * @param min
+	 * @param max
+	 * @return
+	 */
+	public boolean validateInputInt(String VAL, int min, int max) {	
+		int val = Integer.parseInt(VAL);
+
+		return val >= min && val <= max ? true : false;
+	}
 	
-    public boolean someLibraryMethod() {
-        return true;
-    }
+	/**
+	 * 
+	 * @param val
+	 * @param min
+	 * @param max
+	 * @return
+	 */
+	public boolean validateInputString(String val, int min, int max) {
+		int valLength = val.length();
+		return valLength >= min && valLength <= max ? true : false;
+	}
+	
+	private void feederCrudProcessing(Feeder newFeeder){
+		Gson gson = new Gson();
+		//Need to check if feeder already exist
+		
+		//If exist, prompt user if they want to change it
+		
+		//If it doesn't exist, create the new feeder
+		String newFeederJson = gson.toJson(newFeeder);
+		
+	}
 }
+
+
+
+
+
+

@@ -6,9 +6,32 @@ package bEngine;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+import org.junit.Before;
+
 public class MainDriverTest {
-    @Test public void testSomeLibraryMethod() {
-        MainDriver classUnderTest = new MainDriver();
-        assertTrue("someLibraryMethod should return 'true'", classUnderTest.someLibraryMethod());
+	MainDriver classUnderTest;
+	
+	@Before
+	public void testInit() {
+		classUnderTest = new MainDriver();
+	}
+    
+    @Test
+    public void testValidateInt() {
+    	assertTrue("Should be true", classUnderTest.validateInputInt("50", 0, 100));
+    	assertTrue("Should be true", classUnderTest.validateInputInt("0", 0, 100));
+    	assertTrue("Should be true", classUnderTest.validateInputInt("100", 0, 100));
+    	assertFalse("Should be false", classUnderTest.validateInputInt("900", 0, 100));
+    	assertFalse("Should be false", classUnderTest.validateInputInt("-2", 0, 100));
+    	assertFalse("Should be false", classUnderTest.validateInputInt("", 0, 100));
+    }
+    
+    @Test
+    public void testValidateInputString() {
+    	assertTrue("true", classUnderTest.validateInputString("CLIF", 1, 4));
+    	assertTrue("true", classUnderTest.validateInputString("ABCDEFGHIJ", 0, 10));
+    	assertTrue("true", classUnderTest.validateInputString("123", 0, 4));
+    	assertFalse("true", classUnderTest.validateInputString("", 1, 4));
+    	assertFalse("false", classUnderTest.validateInputString("123", 0, 2));
     }
 }
